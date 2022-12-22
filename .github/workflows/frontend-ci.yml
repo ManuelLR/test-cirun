@@ -25,7 +25,7 @@ jobs:
       matrix:
         project:
           - chromium
-        #   - firefox
+          - firefox
         #   - webkit
         # shardIndex: [1, 2]
         # shardTotal: [2]
@@ -38,18 +38,19 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v3.1.0
-      - run: sleep 2m
       # Node
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - run: sleep 2m
 
-      # - name: Install dependencies
-      #   run: yarn
-      # - name: Install Playwright ${{ matrix.project }}
-      #   run: npx playwright install ${{ matrix.project }} --with-deps
+      - name: Enable yarn
+        # https://yarnpkg.com/getting-started/install#nodejs-1610
+        run: corepack enable
+      - name: Install dependencies
+        run: yarn
+      - name: Install Playwright ${{ matrix.project }}
+        run: npx playwright install ${{ matrix.project }} --with-deps
       # - name: Create env file
       #   run: |
       #     set -ex
@@ -70,21 +71,21 @@ jobs:
       #     cat .env
       #     echo "::endgroup::"
 
-      # - name: Run Playwright tests
-      #   run: |
-      #     set -ex
-      #     xvfb-run \
-      #       npx playwright test \
-      #         --project=${{ matrix.project }} \
-      #         --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} \
-      #         --grep-invert @onlyPeriodicExecution \
-      #         --headed
+      - name: Run Playwright tests
+        run: |
+          set -ex
+          xvfb-run \
+            npx playwright test \
+              --project=${{ matrix.project }} \
+              --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} \
+              --grep-invert @onlyPeriodicExecution \
+              --headed
 
-      #   # You would like to combine reports? me toooo: https://github.com/microsoft/playwright/issues/10437
-      # - uses: actions/upload-artifact@v3
-      #   if: always()
-      #   with:
-      #     name: "playwright-report[${{ github.run_attempt }}]_${{ matrix.project }}-${{ matrix.shardIndex }}"
-      #     # We need to define the full-paths, problems of that action 🙈
-      #     path: e2e-tests/playwright-report/
-      #     retention-days: 30
+        # You would like to combine reports? me toooo: https://github.com/microsoft/playwright/issues/10437
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: "playwright-report[${{ github.run_attempt }}]_${{ matrix.project }}-${{ matrix.shardIndex }}"
+          # We need to define the full-paths, problems of that action 🙈
+          path: playwright-report/
+          retention-days: 30
