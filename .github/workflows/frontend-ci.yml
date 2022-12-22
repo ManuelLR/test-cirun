@@ -1,0 +1,90 @@
+name: CI - Frontend
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+
+env:
+  NODE_VERSION: "16.x"
+
+  # The concept of Main Region it's to avoid duplicate the same step for
+  # every tenant when it's not necessary
+  MAIN_REGION: us-east1
+
+jobs:
+
+  e2e-tests-v2:
+    runs-on: "cirun-gpu-e2e-runner--${{ github.run_id }}-${{ matrix.project }}-${{ matrix.shardIndex }}"
+    name: "[${{ matrix.project }}/${{ matrix.shardIndex }}] E2E tests v2"
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - chromium
+        #   - firefox
+        #   - webkit
+        # shardIndex: [1, 2]
+        # shardTotal: [2]
+        shardIndex: [1]
+        shardTotal: [1]
+
+    env:
+      playwright-project: ${{ matrix.project }}
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3.1.0
+      - run: sleep 2m
+      # Node
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: sleep 2m
+
+      # - name: Install dependencies
+      #   run: yarn
+      # - name: Install Playwright ${{ matrix.project }}
+      #   run: npx playwright install ${{ matrix.project }} --with-deps
+      # - name: Create env file
+      #   run: |
+      #     set -ex
+      #     cp "../workspace-www/${{ steps.env-info.outputs.workspace-www-url-env-vars-file-relative-path }}" .env
+      #     echo "${E2E_SECRETS}" >> .env
+      #     echo "CYPRESS_TENANT_ID=${{ steps.env-info.outputs.tenant-id }}" >> .env
+      #     echo "CYPRESS_WORKSPACE_URL=${{ steps.env-info.outputs.workspace-www-url }}" >> .env
+      #     echo "CYPRESS_ACCOUNTS_API_URL=${{ steps.env-info.outputs.account-api-url }}" >> .env
+      #     echo "E2E_RUN_ID=${{ github.repository }}:${{ github.run_id }}[${{ github.run_attempt }}]" >> .env
+
+      #     if [ "${E2E_FILES_CHANGED}" == 'true' ]; then
+      #       # On PRs with test files modified, we would like to record the trace of all tests
+      #       echo "::warning title=Enabled trace record on all E2E::We detected some file changed inside the E2E tests folder so we enable the trace record for all test to be able to review the implementation"
+      #       echo "E2E_CONFIG_OVERRIDE_USE_TRACE=on" >> .env
+      #     fi
+
+      #     echo "::group::.env content"
+      #     cat .env
+      #     echo "::endgroup::"
+
+      # - name: Run Playwright tests
+      #   run: |
+      #     set -ex
+      #     xvfb-run \
+      #       npx playwright test \
+      #         --project=${{ matrix.project }} \
+      #         --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} \
+      #         --grep-invert @onlyPeriodicExecution \
+      #         --headed
+
+      #   # You would like to combine reports? me toooo: https://github.com/microsoft/playwright/issues/10437
+      # - uses: actions/upload-artifact@v3
+      #   if: always()
+      #   with:
+      #     name: "playwright-report[${{ github.run_attempt }}]_${{ matrix.project }}-${{ matrix.shardIndex }}"
+      #     # We need to define the full-paths, problems of that action 🙈
+      #     path: e2e-tests/playwright-report/
+      #     retention-days: 30
