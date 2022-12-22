@@ -25,7 +25,7 @@ jobs:
       matrix:
         project:
           - chromium
-          - firefox
+          # - firefox
         #   - webkit
         # shardIndex: [1, 2]
         # shardTotal: [2]
@@ -38,6 +38,19 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v3.1.0
+      - name: Check nvidia drivers
+        run: |
+          set -ex
+          curl https://raw.githubusercontent.com/GoogleCloudPlatform/compute-gpu-installation/main/linux/install_gpu_driver.py --output install_gpu_driver.py
+          sudo python3 install_gpu_driver.py || true
+          nvidia-smi || true
+          docker run --rm --gpus all nvidia/cuda:11.6.2-base-ubuntu20.04 nvidia-smi || true
+          # nvidia-smi
+      - name: Check vulkan config
+        run: |
+          set -ex
+          sudo apt-get install -y vulkan-tools
+          vulkaninfo
       # Node
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3
