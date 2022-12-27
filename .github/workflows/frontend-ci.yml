@@ -25,7 +25,7 @@ jobs:
       matrix:
         project:
           - chromium
-          # - firefox
+          - firefox
         #   - webkit
         # shardIndex: [1, 2]
         # shardTotal: [2]
@@ -87,17 +87,16 @@ jobs:
       - name: Run Playwright tests
         run: |
           set -ex
-          # xvfb-run \
-          #   npx playwright test \
-          #     --project=${{ matrix.project }} \
-          #     --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} \
-          #     --grep-invert @onlyPeriodicExecution \
-          #     --headed
-          npx playwright test \
+          xvfb-run \
+            npx playwright test \
               --project=${{ matrix.project }} \
-              --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+              --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} \
+              --headed
+          # npx playwright test \
+          #     --project=${{ matrix.project }} \
+          #     --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
-      - run: sleep 2h
+#      - run: sleep 2h
 
         # You would like to combine reports? me toooo: https://github.com/microsoft/playwright/issues/10437
       - uses: actions/upload-artifact@v3
