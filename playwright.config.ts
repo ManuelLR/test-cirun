@@ -64,10 +64,15 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices['Desktop Chrome'],
         launchOptions: {
-          // force GPU hardware acceleration
-          // (even in headless mode)
-          // args: ["--use-gl=egl"]
-        }  
+          args: [
+            '--enable-features=Vulkan,UseSkiaRenderer',
+            '--use-vulkan=swiftshader',
+            '--enable-unsafe-webgpu',
+            '--disable-vulkan-fallback-to-gl-for-testing',
+            '--dignore-gpu-blocklist',
+            '--use-angle=vulkan'
+          ]
+        }
       }
     },
 
